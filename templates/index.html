@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNORTIFY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .rule-header, .rule-options {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .rule-preview {
+            background-color: #343a40;
+            color: white;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status-bar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .tab-content {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+        .option-group {
+            margin-bottom: 15px;
+        }
+        .option-group h6 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+<h1 class="mb-4">
+<img src="https://www.enterprisenetworkingplanet.com/wp-content/uploads/2022/03/snort-icon.png" alt="Snort Pig" style="height:3em;">  SNORTIFY
+</h1>
+        <div class="rule-header">
+            <h5><i class="bi bi-card-heading"></i> Rule Header</h5>
+            <hr>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Action</label>
+                    <select class="form-select" id="action">
+                        <option value="alert">alert</option>
+                        <option value="log">log</option>
+                        <option value="drop">drop</option>
+                        <option value="reject">reject</option>
+                        <option value="sdrop">sdrop</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Protocol</label>
+                    <select class="form-select" id="protocol">
+                        <option value="tcp">tcp</option>
+                        <option value="udp">udp</option>
+                        <option value="icmp">icmp</option>
+                        <option value="ip">ip</option>
+                        <option value="http">http</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Source IP</label>
+                    <input type="text" class="form-control" id="sourceIp" value="any" placeholder="IP or any">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Source Port</label>
+                    <input type="text" class="form-control" id="sourcePort" value="any" placeholder="Port or any">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Direction</label>
+                    <select class="form-select" id="direction">
+                        <option value="->">-></option>
+                        <option value="<>"><></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Dest IP</label>
+                    <input type="text" class="form-control" id="destIp" value="any" placeholder="IP or any">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Dest Port</label>
+                    <input type="text" class="form-control" id="destPort" value="any" placeholder="Port or any">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="sameIp">
+                        <label class="form-check-label" for="sameIp">Same IP</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rule-options">
+            <ul class="nav nav-tabs" id="optionsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Basic</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" type="button" role="tab">Content</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="http-tab" data-bs-toggle="tab" data-bs-target="#http" type="button" role="tab">HTTP</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="flow-tab" data-bs-toggle="tab" data-bs-target="#flow" type="button" role="tab">Flow</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab">Advanced</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="optionsTabContent">
+                <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Basic Options</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Message</label>
+                                    <input type="text" class="form-control" id="msg" value="Example rule">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">SID</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="sid" value="1000001">
+                                        <button class="btn btn-outline-secondary" id="generateSidBtn">Generate</button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Revision</label>
+                                    <input type="number" class="form-control" id="rev" value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Classification</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Classtype</label>
+                                    <select class="form-select" id="classtype">
+                                        {% for type in classtypes %}
+                                        <option value="{{ type }}" {% if type == 'not-suspicious' %}selected{% endif %}>{{ type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Priority</label>
+                                    <input type="number" class="form-control" id="priority" value="3" min="1" max="5">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Reference</label>
+                                    <input type="text" class="form-control" id="reference" placeholder="url, ...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="content" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Content Matching</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Content</label>
+                                    <input type="text" class="form-control" id="content" placeholder="Content to match">
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="nocase">
+                                        <label class="form-check-label" for="nocase">Case Insensitive (nocase)</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">PCRE</label>
+                                    <input type="text" class="form-control" id="pcre" placeholder="Regular expression">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">URI Content</label>
+                                    <input type="text" class="form-control" id="uricontent" placeholder="URI content to match">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Content Modifiers</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Depth</label>
+                                    <input type="number" class="form-control" id="depth" placeholder="Maximum search depth">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Offset</label>
+                                    <input type="number" class="form-control" id="offset" placeholder="Starting search position">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Distance</label>
+                                    <input type="number" class="form-control" id="distance" placeholder="Bytes from previous match">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Within</label>
+                                    <input type="number" class="form-control" id="within" placeholder="Bytes from previous match">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="http" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>HTTP Matching</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">HTTP Method</label>
+                                    <input type="text" class="form-control" id="http_method" placeholder="GET, POST, etc.">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">HTTP URI</label>
+                                    <input type="text" class="form-control" id="http_uri" placeholder="/path/to/resource">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>HTTP Headers</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">HTTP Header</label>
+                                    <input type="text" class="form-control" id="http_header" placeholder="Header name or value">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">HTTP Cookie</label>
+                                    <input type="text" class="form-control" id="http_cookie" placeholder="Cookie name or value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="flow" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Flow Control</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Flow</label>
+                                    <select class="form-select" id="flow">
+                                        <option value="">-- Select --</option>
+                                        <option value="to_client">to_client</option>
+                                        <option value="to_server">to_server</option>
+                                        <option value="from_client">from_client</option>
+                                        <option value="from_server">from_server</option>
+                                        <option value="established">established</option>
+                                        <option value="not_established">not_established</option>
+                                        <option value="stateless">stateless</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Flowbits</label>
+                                    <input type="text" class="form-control" id="flowbits" placeholder="set,isset,etc.">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Thresholding & Tagging</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Threshold</label>
+                                    <input type="text" class="form-control" id="threshold" placeholder="type count, seconds">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tag</label>
+                                    <input type="text" class="form-control" id="tag" placeholder="session, host, etc.">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Metadata</label>
+                                    <input type="text" class="form-control" id="metadata" placeholder="key value, ...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="advanced" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> These are advanced options that require specific knowledge of Snort rule syntax.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Byte Test/Extract</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Byte Test</label>
+                                    <input type="text" class="form-control" id="byte_test" placeholder="!value, operator, etc.">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Byte Jump</label>
+                                    <input type="text" class="form-control" id="byte_jump" placeholder="offset, align, etc.">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <h6>Advanced Matching</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Isdataat</label>
+                                    <input type="text" class="form-control" id="isdataat" placeholder="offset, relative">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Base64 Decode</label>
+                                    <input type="text" class="form-control" id="base64_decode" placeholder="offset, bytes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rule-preview" id="rulePreview">
+            alert tcp any any -> any any (msg:"Example rule"; sid:1000001; rev:1; classtype:not-suspicious; priority:3;)
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <button class="btn btn-primary" id="updateBtn">
+                <i class="bi bi-arrow-repeat"></i> Update Rule
+            </button>
+            <button class="btn btn-success" id="copyBtn">
+                <i class="bi bi-clipboard"></i> Copy Rule
+            </button>
+            <button class="btn btn-secondary" id="validateBtn">
+                <i class="bi bi-check-circle"></i> Validate Rule
+            </button>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            Ready
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rulePreview = document.getElementById('rulePreview');
+        const statusBar = document.getElementById('statusBar');
+        let currentRule = JSON.parse(JSON.stringify({
+            action: 'alert',
+            protocol: 'tcp',
+            source_ip: 'any',
+            source_port: 'any',
+            direction: '->',
+            dest_ip: 'any',
+            dest_port: 'any',
+            sameip: false,
+            options: {
+                msg: 'Example rule',
+                sid: 1000001,
+                rev: 1,
+                classtype: 'not-suspicious',
+                priority: 3,
+                content: '',
+                nocase: false,
+                depth: '',
+                offset: '',
+                distance: '',
+                within: '',
+                pcre: '',
+                flow: '',
+                flowbits: '',
+                uricontent: '',
+                http_method: '',
+                http_uri: '',
+                http_header: '',
+                http_cookie: '',
+                threshold: '',
+                metadata: '',
+                reference: '',
+                tag: ''
+            }
+        }));
+
+        // Initialize form fields with default values
+        function initializeFormFields() {
+            document.getElementById('action').value = currentRule.action;
+            document.getElementById('protocol').value = currentRule.protocol;
+            document.getElementById('sourceIp').value = currentRule.source_ip;
+            document.getElementById('sourcePort').value = currentRule.source_port;
+            document.getElementById('direction').value = currentRule.direction;
+            document.getElementById('destIp').value = currentRule.dest_ip;
+            document.getElementById('destPort').value = currentRule.dest_port;
+            document.getElementById('sameIp').checked = currentRule.sameip;
+
+            // Basic options
+            document.getElementById('msg').value = currentRule.options.msg;
+            document.getElementById('sid').value = currentRule.options.sid;
+            document.getElementById('rev').value = currentRule.options.rev;
+            document.getElementById('classtype').value = currentRule.options.classtype;
+            document.getElementById('priority').value = currentRule.options.priority;
+            document.getElementById('reference').value = currentRule.options.reference;
+
+            // Content options
+            document.getElementById('content').value = currentRule.options.content;
+            document.getElementById('nocase').checked = currentRule.options.nocase;
+            document.getElementById('depth').value = currentRule.options.depth;
+            document.getElementById('offset').value = currentRule.options.offset;
+            document.getElementById('distance').value = currentRule.options.distance;
+            document.getElementById('within').value = currentRule.options.within;
+            document.getElementById('pcre').value = currentRule.options.pcre;
+            document.getElementById('uricontent').value = currentRule.options.uricontent;
+
+            // HTTP options
+            document.getElementById('http_method').value = currentRule.options.http_method;
+            document.getElementById('http_uri').value = currentRule.options.http_uri;
+            document.getElementById('http_header').value = currentRule.options.http_header;
+            document.getElementById('http_cookie').value = currentRule.options.http_cookie;
+
+            // Flow options
+            document.getElementById('flow').value = currentRule.options.flow;
+            document.getElementById('flowbits').value = currentRule.options.flowbits;
+
+            // Thresholding and tagging
+            document.getElementById('threshold').value = currentRule.options.threshold;
+            document.getElementById('tag').value = currentRule.options.tag;
+            document.getElementById('metadata').value = currentRule.options.metadata;
+        }
+
+        // Update rule from form fields
+        function updateRuleFromForm() {
+            currentRule.action = document.getElementById('action').value;
+            currentRule.protocol = document.getElementById('protocol').value;
+            currentRule.source_ip = document.getElementById('sourceIp').value;
+            currentRule.source_port = document.getElementById('sourcePort').value;
+            currentRule.direction = document.getElementById('direction').value;
+            currentRule.dest_ip = document.getElementById('destIp').value;
+            currentRule.dest_port = document.getElementById('destPort').value;
+            currentRule.sameip = document.getElementById('sameIp').checked;
+
+            // Basic options
+            currentRule.options.msg = document.getElementById('msg').value;
+            currentRule.options.sid = parseInt(document.getElementById('sid').value) || 0;
+            currentRule.options.rev = parseInt(document.getElementById('rev').value) || 0;
+            currentRule.options.classtype = document.getElementById('classtype').value;
+            currentRule.options.priority = parseInt(document.getElementById('priority').value) || 0;
+            currentRule.options.reference = document.getElementById('reference').value;
+
+            // Content options
+            currentRule.options.content = document.getElementById('content').value;
+            currentRule.options.nocase = document.getElementById('nocase').checked;
+            currentRule.options.depth = document.getElementById('depth').value;
+            currentRule.options.offset = document.getElementById('offset').value;
+            currentRule.options.distance = document.getElementById('distance').value;
+            currentRule.options.within = document.getElementById('within').value;
+            currentRule.options.pcre = document.getElementById('pcre').value;
+            currentRule.options.uricontent = document.getElementById('uricontent').value;
+
+            // HTTP options
+            currentRule.options.http_method = document.getElementById('http_method').value;
+            currentRule.options.http_uri = document.getElementById('http_uri').value;
+            currentRule.options.http_header = document.getElementById('http_header').value;
+            currentRule.options.http_cookie = document.getElementById('http_cookie').value;
+
+            // Flow options
+            currentRule.options.flow = document.getElementById('flow').value;
+            currentRule.options.flowbits = document.getElementById('flowbits').value;
+
+            // Thresholding and tagging
+            currentRule.options.threshold = document.getElementById('threshold').value;
+            currentRule.options.tag = document.getElementById('tag').value;
+            currentRule.options.metadata = document.getElementById('metadata').value;
+        }
+
+        // Generate and display the rule
+        function updateRulePreview() {
+            updateRuleFromForm();
+            fetch('/api/rule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentRule),
+            })
+            .then(response => response.json())
+            .then(data => {
+                rulePreview.textContent = data.rule;
+                statusBar.textContent = 'Rule updated at ' + new Date().toLocaleTimeString();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusBar.textContent = 'Error updating rule: ' + error.message;
+            });
+        }
+
+        // Generate new SID
+        document.getElementById('generateSidBtn').addEventListener('click', function() {
+            fetch('/api/generate_sid')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('sid').value = data.sid;
+                    updateRulePreview();
+                });
+        });
+
+        // Manual update button
+        document.getElementById('updateBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateRulePreview();
+        });
+
+        // Copy rule button
+        document.getElementById('copyBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText(rulePreview.textContent)
+                .then(() => {
+                    statusBar.textContent = 'Rule copied to clipboard';
+                })
+                .catch(err => {
+                    statusBar.textContent = 'Failed to copy rule';
+                });
+        });
+
+        // Validate rule button
+        document.getElementById('validateBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch('/api/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({rule: rulePreview.textContent}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusBar.textContent = data.message;
+            });
+        });
+
+        // Automatic updates on input changes
+        const inputs = [
+            'action', 'protocol', 'sourceIp', 'sourcePort', 'direction',
+            'destIp', 'destPort', 'sameIp', 'msg', 'sid', 'rev', 'classtype',
+            'priority', 'reference', 'content', 'nocase', 'depth', 'offset',
+            'distance', 'within', 'pcre', 'uricontent', 'http_method', 'http_uri',
+            'http_header', 'http_cookie', 'flow', 'flowbits', 'threshold',
+            'metadata', 'tag'
+        ];
+
+        inputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', updateRulePreview);
+                if (element.type === 'text' || element.type === 'number') {
+                    element.addEventListener('input', function() {
+                        clearTimeout(this.timer);
+                        this.timer = setTimeout(updateRulePreview, 500);
+                    });
+                }
+            }
+        });
+
+        // Initialize form and first rule preview
+        initializeFormFields();
+        updateRulePreview();
+    });
+</script>
+</body>
+</html>
